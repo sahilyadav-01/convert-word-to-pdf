@@ -25,6 +25,11 @@ class FWDParser(BaseParser):
             if line.startswith(("I", "H", "J", "C", "*", "#")):
                 continue
 
+            # Skip header description lines containing column titles
+            line_lower = line.lower()
+            if any(k in line_lower for k in ["station", "force", "load", "chainage"]) and any(k in line_lower for k in ["d0", "d1", "sensor", "deflection"]):
+                continue
+
             tokens = [t.strip() for t in re.split(r",|\t|\s+", line) if t.strip()]
             if not tokens:
                 continue
