@@ -1,95 +1,73 @@
-"""Main entry point for Word to Excel Batch Converter."""
+"""Main entry point for FWD Data Converter Pro."""
 
 import argparse
 import os
 import sys
 
-from src.excel_writer import ExcelWriter
-from src.extractor import ExtractedRecord, Extractor
-from src.file_manager import FileManager
-from src.sorter import Sorter
-from src.word_reader import WordReader
+from core.detector import Detector, InputFileInfo
+from core.processor import PipelineProcessor
 
 
 def run_cli(input_paths, output_path: str, prefix: str = "D"):
-    """Command-line execution mode for automated headless processing."""
-    print("=" * 60)
-    print("WORD TO EXCEL BATCH CONVERTER (CLI Mode)")
-    print("=" * 60)
+    """Command-line batch execution across multi-format files."""
+    print("=" * 65)
+    print("FWD DATA CONVERTER PRO (CLI Mode)")
+    print("=" * 65)
 
-    fm = FileManager()
+    files = []
     for raw_p in input_paths:
         p = raw_p.strip('"\'')
         if os.path.isdir(p):
-            fm.add_folder(p)
+            for root, _, filenames in os.walk(p):
+                for fn in sorted(filenames):
+                    full = os.path.join(root, fn)
+                    info = Detector.inspect_file(full)
+                    if info and not any(f.path == info.path for f in files):
+                        files.append(info)
         elif os.path.isfile(p):
-            fm.add_file(p)
+            info = Detector.inspect_file(p)
+            if info and not any(f.path == info.path for f in files):
+                files.append(info)
 
-    print(f"Total files queued: {fm.total_count}")
-    print(f"LHS files: {len(fm.lhs_files)}")
-    print(f"RHS files: {len(fm.rhs_files)}")
-    print(f"Unknown files: {len(fm.unknown_files)}")
-
-    if fm.total_count == 0:
-        print("Error: No valid .docx / .doc files found.")
+    if not files:
+        print("Error: No valid FWD survey files found (.docx, .doc, .pdf, .xlsx, .xls, .csv, .txt, .fwd).")
         sys.exit(1)
 
-    extractor = Extractor(prefix=prefix)
-    all_records = []
-    error_logs = []
+    print(f"Total files queued: {len(files)}")
+    lhs_count = sum(1 for f in files if f.side == "LHS")
+    rhs_count = sum(1 for f in files if f.side == "RHS")
+    unk_count = sum(1 for f in files if f.side not in ("LHS", "RHS"))
+    print(f"  • LHS files: {lhs_count}")
+    print(f"  • RHS files: {rhs_count}")
+    print(f"  • Unknown files: {unk_count}")
 
-    for idx, f in enumerate(fm.files, 1):
-        print(f"[{idx}/{fm.total_count}] Reading {f.filename} (Side: {f.side})...")
-        doc_data = WordReader.read(f.path)
-        if not doc_data.success:
-            print(f"  Warning: {doc_data.error_message}")
-            error_logs.append({
-                "file": f.filename,
-                "level": "ERROR",
-                "message": doc_data.error_message or "Read error",
-                "action": "Skipped file"
-            })
-            continue
+    processor = PipelineProcessor(prefix=prefix)
 
-        records = extractor.extract(doc_data, side=f.side)
-        print(f"  Extracted {len(records)} '{prefix}' records.")
-        all_records.extend(records)
+    def log_print(msg, level):
+        print(f"  [{level}] {msg}")
 
-    if not all_records:
-        print(f"Error: No records beginning with '{prefix}' found.")
+    try:
+        result = processor.process(
+            files=files,
+            output_path=output_path,
+            progress_cb=lambda c, t, f: print(f"Processing ({c}/{t}): {f}"),
+            log_cb=log_print
+        )
+        print("\n" + "=" * 65)
+        print("CONVERSION SUCCESSFUL!")
+        print(f"• Total records extracted: {result['records_count']}")
+        print(f"• Output Excel: {result['output_path']}")
+        print("=" * 65)
+    except Exception as e:
+        print(f"\nProcessing failed: {e}")
         sys.exit(1)
-
-    print(f"Sorting {len(all_records)} total records: LHS (increasing) -> RHS (decreasing)...")
-    sorted_records = Sorter.sort_records(all_records)
-    lhs_sorted, rhs_sorted, unk_sorted = Sorter.split_and_sort(all_records)
-
-    summary_stats = {
-        "total_files": fm.total_count,
-        "lhs_files": len(fm.lhs_files),
-        "rhs_files": len(fm.rhs_files),
-        "unknown_files": len(fm.unknown_files),
-        "total_records": len(sorted_records),
-        "lhs_records": len(lhs_sorted),
-        "rhs_records": len(rhs_sorted),
-        "prefix": prefix,
-        "output_path": output_path
-    }
-
-    print(f"Generating Excel workbook: {output_path}...")
-    out_file = ExcelWriter.write_workbook(
-        output_path=output_path,
-        records=sorted_records,
-        summary_stats=summary_stats,
-        error_logs=error_logs
-    )
-    print(f"Success! Final Excel workbook created at: {out_file}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Word to Excel Batch Converter (.docx/.doc -> .xlsx)")
+    parser = argparse.ArgumentParser(description="FWD Data Converter Pro (Multi-Format -> Excel .xlsx)")
     parser.add_argument("--cli", action="store_true", help="Run in CLI headless mode without GUI")
     parser.add_argument("-i", "--input", nargs="+", help="Input files or folders to process")
-    parser.add_argument("-o", "--output", default="FWD_Output.xlsx", help="Output .xlsx file path")
+    parser.add_argument("-o", "--output", default="FWD_Consolidated_Output.xlsx", help="Output .xlsx file path")
     parser.add_argument("-p", "--prefix", default="D", help="Record prefix filter (default: 'D')")
 
     args, unknown = parser.parse_known_args()
@@ -100,8 +78,7 @@ def main():
             sys.exit(1)
         run_cli(args.input, args.output, args.prefix)
     else:
-        # Launch modern GUI
-        from src.gui import launch_gui
+        from gui.main_window import launch_gui
         launch_gui()
 
 

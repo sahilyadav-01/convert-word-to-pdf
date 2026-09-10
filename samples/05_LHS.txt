@@ -1,0 +1,4 @@
+STATION_REPORT_LHS_05
+Station ID    Chainage    Force    D0       D1
+D120          120         40.0     0.46     0.33
+D125          125         40.1     0.44     0.31
