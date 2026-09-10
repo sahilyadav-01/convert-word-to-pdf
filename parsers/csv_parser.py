@@ -14,19 +14,21 @@ class CSVParser(BaseParser):
         records: List[FWDRecord] = []
         filename = os.path.basename(file_path)
 
-        # Detect delimiter and read lines
-        try:
-            with open(file_path, "r", encoding="utf-8-sig", errors="ignore") as f:
-                sample = f.read(4096)
-                f.seek(0)
-                try:
-                    dialect = csv.Sniffer().sniff(sample, delimiters=",\t;|")
-                    delimiter = dialect.delimiter
-                except Exception:
-                    delimiter = ","
+        text = self.read_text_file(file_path)
+        if not text:
+            return records
 
-                reader = csv.reader(f, delimiter=delimiter)
-                rows = [row for row in reader if row and any(row)]
+        try:
+            import io
+            sample = text[:4096]
+            try:
+                dialect = csv.Sniffer().sniff(sample, delimiters=",\t;|")
+                delimiter = dialect.delimiter
+            except Exception:
+                delimiter = ","
+
+            reader = csv.reader(io.StringIO(text), delimiter=delimiter)
+            rows = [row for row in reader if row and any(row)]
         except Exception:
             return records
 

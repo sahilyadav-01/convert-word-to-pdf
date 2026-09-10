@@ -14,11 +14,11 @@ class TXTParser(BaseParser):
         records: List[FWDRecord] = []
         filename = os.path.basename(file_path)
 
-        try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                lines = [line.strip() for line in f if line.strip()]
-        except Exception:
+        text = self.read_text_file(file_path)
+        if not text:
             return records
+
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
 
         header_mapping = {}
 

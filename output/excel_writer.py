@@ -2,8 +2,10 @@
 
 import datetime
 import os
+import re
 from typing import Any, Dict, List
 import openpyxl
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
@@ -12,6 +14,13 @@ from core.data_model import FWDRecord
 
 class ExcelWriter:
     """Creates a styled, multi-sheet Excel workbook from standardized FWDRecord items."""
+
+    @staticmethod
+    def sanitize(val: Any) -> Any:
+        """Removes null bytes and illegal control characters that crash openpyxl."""
+        if isinstance(val, str):
+            return ILLEGAL_CHARACTERS_RE.sub("", val).strip()
+        return val
 
     HEADER_FILL = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")  # Navy Blue
     HEADER_FONT = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
