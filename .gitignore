@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# PyInstaller & Build
+build/
+dist/
+*.spec
+
+# Testing & Cache
+.pytest_cache/
+.coverage
+
+# Office Temporary Files
+~$*.docx
+~$*.doc
+~$*.xlsx
+*.tmp
+
+# Generated Output
+test_output.xlsx
+FWD_Output.xlsx

@@ -18,7 +18,8 @@ def run_cli(input_paths, output_path: str, prefix: str = "D"):
     print("=" * 60)
 
     fm = FileManager()
-    for p in input_paths:
+    for raw_p in input_paths:
+        p = raw_p.strip('"\'')
         if os.path.isdir(p):
             fm.add_folder(p)
         elif os.path.isfile(p):

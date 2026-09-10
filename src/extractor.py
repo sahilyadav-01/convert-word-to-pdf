@@ -58,13 +58,35 @@ class Extractor:
 
         return None
 
+    HEADER_KEYWORDS = {"station", "chainage", "deflection", "unit", "remark", "location", "layer", "distance", "ch.", "temp"}
+
+    @classmethod
+    def is_header_row(cls, row: List[str]) -> bool:
+        """Determines if a table row is a header row rather than a data record."""
+        if not row:
+            return False
+        # Count how many cells contain known header keywords or units like (mm), (kn), etc.
+        header_matches = 0
+        for cell in row:
+            txt_lower = cell.strip().lower()
+            if any(k in txt_lower for k in cls.HEADER_KEYWORDS) or "(" in txt_lower:
+                header_matches += 1
+        return header_matches >= 2 or (len(row) <= 2 and header_matches >= 1)
+
     def is_d_identifier(self, text: str) -> bool:
-        """Check if cell/text starts with the target prefix (case-insensitive D)."""
+        """Check if cell/text is a valid D data record identifier (e.g., 'D100', 'D 125', 'D-500')."""
         if not text:
             return False
         clean = text.strip()
-        # Starts with prefix (e.g., 'D', 'd') followed immediately by digits or hyphen or space
-        pattern = rf"^{re.escape(self.prefix)}(?:[\s\-_.:]*)?(\d+.*)?$"
+        # Reject column headers that have units like 'D0 (mm)', 'D300 (kN)', 'Depth (m)'
+        if "(" in clean or ")" in clean:
+            return False
+        # Reject common words starting with D like 'Date', 'Deflection', 'Distance', 'Direction'
+        if clean.lower() in {"date", "deflection", "deflections", "distance", "direction", "depth", "data"}:
+            return False
+
+        # Must start with prefix (e.g. 'D' or 'd') followed by digits (e.g., 'D100', 'D-100', 'D 100')
+        pattern = rf"^{re.escape(self.prefix)}[\s\-_.:]*\d+(?:\.\d+)?$"
         return bool(re.match(pattern, clean, re.IGNORECASE))
 
     def extract_from_tables(self, doc_data: DocumentData, side: str) -> List[ExtractedRecord]:
@@ -77,15 +99,23 @@ class Extractor:
 
             # Detect if there is a header row with chainage/station
             header_chainage_idx = -1
-            if len(table) > 1:
+            start_row_idx = 0
+
+            # Check if row 0 is a header row
+            if len(table) > 0 and self.is_header_row(table[0]):
                 first_row = [str(c).lower() for c in table[0]]
                 for idx, col_name in enumerate(first_row):
                     if any(k in col_name for k in ["chain", "ch.", "ch ", "km", "station", "location"]):
                         header_chainage_idx = idx
                         break
+                start_row_idx = 1
 
-            for row in table:
+            for row in table[start_row_idx:]:
                 if not row or not any(row):
+                    continue
+
+                # Skip secondary header rows if repeated across pages
+                if self.is_header_row(row):
                     continue
 
                 # Find which cell contains the D-identifier
