@@ -92,7 +92,7 @@ class ExcelWriter:
 
         # Populate rows
         for row_idx, r in enumerate(records, start=2):
-            row_vals = r.to_row()
+            row_vals = [cls.sanitize(v) for v in r.to_row()]
             while len(row_vals) < len(headers):
                 row_vals.append("")
             ws.append(row_vals)
@@ -186,7 +186,7 @@ class ExcelWriter:
 
         start_row = 3
         for r_idx, (label, val) in enumerate(summary_rows, start=start_row):
-            ws.append([label, val])
+            ws.append([cls.sanitize(label), cls.sanitize(val)])
             cell_lbl = ws.cell(row=r_idx, column=1)
             cell_val = ws.cell(row=r_idx, column=2)
 
@@ -229,11 +229,11 @@ class ExcelWriter:
         else:
             for r_idx, item in enumerate(error_logs, start=2):
                 ws.append([
-                    item.get("timestamp", now_str),
-                    item.get("file", ""),
-                    item.get("level", "WARNING"),
-                    item.get("message", ""),
-                    item.get("action", "")
+                    cls.sanitize(item.get("timestamp", now_str)),
+                    cls.sanitize(item.get("file", "")),
+                    cls.sanitize(item.get("level", "WARNING")),
+                    cls.sanitize(item.get("message", "")),
+                    cls.sanitize(item.get("action", ""))
                 ])
                 for c_idx in range(1, len(headers) + 1):
                     cell = ws.cell(row=r_idx, column=c_idx)
