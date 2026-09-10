@@ -18,6 +18,22 @@ class BaseParser(ABC):
         pass
 
     @staticmethod
+    def read_text_file(file_path: str) -> str:
+        """Reads a text-based file with automatic encoding detection (UTF-16, UTF-8, etc.)."""
+        with open(file_path, "rb") as f:
+            raw = f.read()
+
+        # Check BOM or try encodings in order
+        encodings = ["utf-16", "utf-16-le", "utf-16-be", "utf-8-sig", "utf-8", "cp1252", "latin1"]
+        for enc in encodings:
+            try:
+                return raw.decode(enc)
+            except (UnicodeDecodeError, LookupError):
+                continue
+
+        return raw.decode("utf-8", errors="ignore")
+
+    @staticmethod
     def parse_chainage_number(text: str) -> Optional[float]:
         """Parse numeric chainage from string like '10+250', '125.5', 'Km 10'."""
         if not text:
