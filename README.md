@@ -73,7 +73,7 @@ Every parser normalizes its records into a unified structure:
 * **Station ID:** e.g. `D100`, `D105`
 * **Station / Chainage:** Numeric chainage for directional sorting (e.g. `100.0`, `10+250` $\rightarrow$ `10250.0`)
 * **Force:** Target impact load in kN (e.g. `40.0 kN`)
-* **Deflections ($D_0$ through $D_6$):** Sensor deflection values (in mm)
+* **Deflections ($D_0$ through $D_6$):** Sensor deflection values same as in the sheet
 * **Temperatures:** Air Temperature & Asphalt / Pavement Temperature (°C)
 * **GPS:** Latitude & Longitude
 * **Metadata:** Survey Time, Remarks, Source File, Source Format

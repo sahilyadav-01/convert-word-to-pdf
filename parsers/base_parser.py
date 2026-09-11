@@ -71,7 +71,10 @@ class BaseParser(ABC):
         match = re.search(r"[-+]?\d+(?:\.\d+)?", s)
         if match:
             try:
-                return float(match.group(0))
+                raw_num = match.group(0)
+                if "." in raw_num:
+                    return float(raw_num)
+                return int(raw_num)
             except ValueError:
                 pass
         return None

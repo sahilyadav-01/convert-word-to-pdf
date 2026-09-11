@@ -126,10 +126,16 @@ class ExcelWriter:
                     cell.alignment = Alignment(horizontal="right", vertical="center")
                     if isinstance(cell.value, (int, float)):
                         cell.number_format = "#,##0.00"
-                elif 4 <= col_idx <= 11:  # Force and D0..D6
+                elif col_idx == 4:  # Force
                     cell.alignment = Alignment(horizontal="right", vertical="center")
                     if isinstance(cell.value, (int, float)):
-                        cell.number_format = "0.000" if col_idx > 4 else "0.0"
+                        cell.number_format = "0.0"
+                elif 5 <= col_idx <= 11:  # D0..D6 (same as in sheet)
+                    cell.alignment = Alignment(horizontal="right", vertical="center")
+                    if isinstance(cell.value, int):
+                        cell.number_format = "0"
+                    elif isinstance(cell.value, float):
+                        cell.number_format = "0" if cell.value.is_integer() else "0.###"
                 elif col_idx in (12, 13):  # Temperatures
                     cell.alignment = Alignment(horizontal="right", vertical="center")
                     if isinstance(cell.value, (int, float)):

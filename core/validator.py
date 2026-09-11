@@ -31,12 +31,7 @@ class Validator:
                 })
             seen_stations.add(key)
 
-            # Validate deflection bounds
-            if r.d0 is not None and (r.d0 < 0 or r.d0 > 5.0):
-                # If deflection is in microns (e.g. 550 microns), normalize to mm if needed or flag
-                if r.d0 > 50.0:
-                    r.d0 = r.d0 / 1000.0  # converted from microns to mm
-
+            # Deflections are kept exactly as in the sheet
             valid_records.append(r)
 
         return valid_records, logs

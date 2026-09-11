@@ -60,10 +60,7 @@ class FWDParser(BaseParser):
                         if t_idx < len(tokens):
                             raw_d = self.parse_float(tokens[t_idx])
                             if raw_d is not None:
-                                # Convert microns (µm) to mm if > 5.0
-                                if raw_d > 5.0:
-                                    raw_d = raw_d / 1000.0
-                                setattr(rec, f"d{d_i}", round(raw_d, 4))
+                                setattr(rec, f"d{d_i}", raw_d)
 
                     # Temperatures (tokens 11, 12 in KUAB)
                     if len(tokens) > 11:
@@ -140,9 +137,7 @@ class FWDParser(BaseParser):
                     start_d = 1
 
                 for d_i, n_val in enumerate(numeric_vals[start_d:start_d + 7]):
-                    if n_val > 5.0:
-                        n_val = n_val / 1000.0
-                    setattr(rec, f"d{d_i}", round(n_val, 4))
+                    setattr(rec, f"d{d_i}", n_val)
 
             rec.extra_data = [t for idx, t in enumerate(tokens) if idx != d_idx]
             records.append(rec)

@@ -12,7 +12,7 @@ class FWDRecord:
     station: float = 0.0                # Numeric station / chainage value for sorting
     station_str: str = ""               # Original representation e.g. '100', '10+250', 'Km 12.5'
     force: Optional[float] = None       # Impact load in kN (e.g. 40.0)
-    d0: Optional[float] = None          # Deflection sensor 0 (mm or microns)
+    d0: Optional[float] = None          # Deflection sensor 0 (same as in sheet)
     d1: Optional[float] = None          # Deflection sensor 1
     d2: Optional[float] = None          # Deflection sensor 2
     d3: Optional[float] = None          # Deflection sensor 3
@@ -61,7 +61,7 @@ class FWDRecord:
             "Station ID",
             "Station / Chainage",
             "Force (kN)",
-            "D0 (mm)",
+            "D0",
             "D1",
             "D2",
             "D3",
