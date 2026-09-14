@@ -1,4 +1,0 @@
-=================================================================
-FWD DATA CONVERTER PRO (CLI Mode)
-=================================================================
-Error: No valid FWD survey files found (.docx, .doc, .pdf, .xlsx, .xls, .csv, .txt, .fwd).
