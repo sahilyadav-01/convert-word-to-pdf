@@ -4,16 +4,16 @@ import os
 import tempfile
 import openpyxl
 import pytest
-from src.excel_writer import ExcelWriter
-from src.extractor import ExtractedRecord
+from core.data_model import FWDRecord
+from output.excel_writer import ExcelWriter
 
 
 def test_write_workbook():
     records = [
-        ExtractedRecord(side="LHS", source_file="01_LHS.docx", d_value="D100", chainage=100.0, chainage_str="100", data_values=["0.55", "0.41"]),
-        ExtractedRecord(side="LHS", source_file="02_LHS.docx", d_value="D105", chainage=105.0, chainage_str="105", data_values=["0.52", "0.38"]),
-        ExtractedRecord(side="RHS", source_file="03_RHS.docx", d_value="D500", chainage=500.0, chainage_str="500", data_values=["0.61", "0.44"]),
-        ExtractedRecord(side="RHS", source_file="02_RHS.docx", d_value="D495", chainage=495.0, chainage_str="495", data_values=["0.59", "0.43"]),
+        FWDRecord(side="LHS", source_file="01_LHS.docx", station_id="D100", station=100.0, station_str="100", d0=0.55, d1=0.41),
+        FWDRecord(side="LHS", source_file="02_LHS.docx", station_id="D105", station=105.0, station_str="105", d0=0.52, d1=0.38),
+        FWDRecord(side="RHS", source_file="03_RHS.docx", station_id="D500", station=500.0, station_str="500", d0=0.61, d1=0.44),
+        FWDRecord(side="RHS", source_file="02_RHS.docx", station_id="D495", station=495.0, station_str="495", d0=0.59, d1=0.43),
     ]
 
     summary = {
@@ -55,3 +55,4 @@ def test_write_workbook():
         assert ws_data.cell(row=5, column=1).value == "RHS"
         assert ws_data.cell(row=5, column=2).value == "D495"
         assert ws_data.cell(row=5, column=3).value == 495.0
+

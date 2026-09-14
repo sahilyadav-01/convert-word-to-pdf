@@ -118,4 +118,5 @@ python app.py --cli -i samples/ -o FWD_Consolidated_Output.xlsx
 ```bash
 python -m pytest -v tests/
 ```
-All 15 unit and integration tests validate the format detectors, individual parsers, directional sorter, and the unified batch pipeline.
+All 12 unit and integration tests validate the format detectors, individual parsers, directional sorter, and the unified batch pipeline.
+
